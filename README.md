@@ -1,66 +1,184 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# RMS Social Hub
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Plataforma centralizada de gestión de redes sociales para **Raven Marketing Services**. Permite publicar Posts, Reels y Stories en múltiples Facebook Fan Pages desde un solo lugar, con scheduling, RBAC por roles y manejo automático de tokens.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack tecnológico
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Capa | Tecnología |
+|------|-----------|
+| Backend | Laravel 10 |
+| Frontend | Vue 3 + Inertia.js |
+| Estilos | Tailwind CSS |
+| Base de datos | PostgreSQL |
+| Colas async | Redis |
+| API externa | Meta Graph API v21 |
+| Auth | Laravel Breeze (sesión) |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Funcionalidades principales
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Publicación multi-página** — Posts, Reels y Stories en múltiples Fan Pages simultáneamente
+- **Scheduling** — Calendario visual con FullCalendar, publicación programada con precisión de minutos
+- **State machine de posts** — `Draft → Scheduled → Sending → Published | Failed`
+- **Retry automático** — Backoff exponencial (5 / 15 / 30 min), máximo 3 intentos
+- **Token management** — Long-lived tokens (60 días), auto-refresh diario, alertas de expiración
+- **RBAC con 3 roles** — `super-admin`, `admin`, `editor` con permisos por página
+- **Notificaciones** — In-app + email para publicaciones exitosas, fallos y tokens expirados
+- **Audit log inmutable** — Registro completo de acciones con filtros por fecha, usuario y página
+- **Seguridad** — Tokens encriptados en BD, HTTPS enforced, headers de seguridad, rate limiting
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Roles y permisos
 
-## Laravel Sponsors
+| Rol | Permisos |
+|-----|---------|
+| `super-admin` | Acceso total, gestión de credenciales Meta App |
+| `admin` | Gestión de páginas, usuarios y editores |
+| `editor` | Crear y schedular posts en páginas asignadas |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## Requisitos
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- PHP 8.1+
+- Composer
+- Node.js 20+
+- PostgreSQL 14+
+- Redis 6+
+- Meta Developer App (App ID + App Secret)
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Instalación local
 
-## Code of Conduct
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/glacayo/rms-social-hub.git
+cd rms-social-hub
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 2. Instalar dependencias PHP
+composer install
 
-## Security Vulnerabilities
+# 3. Instalar dependencias JS
+npm install
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# 4. Configurar entorno
+cp .env.example .env
+php artisan key:generate
 
-## License
+# 5. Configurar .env con tus credenciales
+# DB_CONNECTION=pgsql
+# DB_DATABASE=rms_social_hub
+# REDIS_HOST=127.0.0.1
+# FACEBOOK_APP_ID=tu_app_id
+# FACEBOOK_APP_SECRET=tu_app_secret
+# FACEBOOK_REDIRECT_URI=http://localhost/facebook/callback
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# 6. Crear tablas y datos de prueba
+php artisan migrate --seed
+
+# 7. Compilar assets (desarrollo)
+npm run dev
+
+# 8. Levantar queue worker
+php artisan queue:work redis --queue=publishing,token-refresh,notifications,default
+
+# 9. Levantar scheduler (en otra terminal)
+php artisan schedule:work
+```
+
+---
+
+## Usuarios de prueba (seeder)
+
+| Email | Contraseña | Rol |
+|-------|-----------|-----|
+| superadmin@rms.test | password | super-admin |
+| admin@rms.test | password | admin |
+| editor@rms.test | password | editor |
+
+---
+
+## Arquitectura de módulos
+
+```
+app/
+├── Modules/
+│   ├── Facebook/
+│   │   ├── Contracts/          # FacebookApiClientInterface
+│   │   ├── DTOs/               # TokenDTO, PageDTO, PublishResponseDTO
+│   │   ├── Services/           # FacebookApiClient, OAuthService, TokenManager
+│   │   └── PageRepository.php
+│   └── Publisher/
+│       ├── PostStateMachine.php
+│       ├── PublishService.php
+│       ├── SchedulerService.php
+│       ├── RetryPolicy.php
+│       └── MediaValidator.php
+├── Jobs/
+│   ├── PublishPostJob.php       # Queue: publishing
+│   └── RefreshTokenJob.php     # Queue: token-refresh (diario 02:00 UTC)
+├── Notifications/
+│   ├── PostPublishedNotification.php
+│   ├── PostFailedNotification.php
+│   └── TokenExpiredNotification.php
+└── Services/
+    └── AuditLogger.php
+```
+
+---
+
+## Queues configuradas
+
+| Queue | Propósito | Workers recomendados |
+|-------|-----------|---------------------|
+| `publishing` | Publicación de posts | 3 |
+| `token-refresh` | Renovación de tokens | 1 |
+| `notifications` | Notificaciones in-app y email | 1 |
+| `default` | Tareas generales | 1 |
+
+---
+
+## Tests
+
+```bash
+# Correr toda la suite
+php artisan test
+
+# Solo tests unitarios
+php artisan test tests/Unit
+
+# Solo tests de integración
+php artisan test tests/Feature
+```
+
+La suite usa `FakeFacebookApi` — ningún test hace llamadas reales a la Meta Graph API.
+
+**Cobertura estimada:**
+- Módulo Publisher: ~85%
+- Módulo Facebook: ~80%
+
+---
+
+## Variables de entorno requeridas
+
+| Variable | Descripción |
+|----------|-------------|
+| `FACEBOOK_APP_ID` | ID de tu Meta App |
+| `FACEBOOK_APP_SECRET` | Secret de tu Meta App |
+| `FACEBOOK_REDIRECT_URI` | URL de callback OAuth |
+| `DB_CONNECTION` | `pgsql` |
+| `QUEUE_CONNECTION` | `redis` |
+| `MAIL_*` | Config de email para notificaciones |
+
+> ⚠️ Nunca commitees el archivo `.env`. Está incluido en `.gitignore`.
+
+---
+
+## Licencia
+
+Proyecto privado de **Raven Marketing Services**. Todos los derechos reservados.
