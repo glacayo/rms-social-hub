@@ -1,0 +1,71 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rms-social-hub
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      APP_NAME: "RMS Social Hub"
+      APP_ENV: "${APP_ENV:-production}"
+      APP_KEY: "${APP_KEY}"
+      APP_DEBUG: "${APP_DEBUG:-false}"
+      APP_URL: "${APP_URL:-http://localhost:8080}"
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: "${LOG_LEVEL:-error}"
+      DB_CONNECTION: pgsql
+      DB_HOST: "${DB_HOST}"
+      DB_PORT: "${DB_PORT:-5432}"
+      DB_DATABASE: "${DB_DATABASE}"
+      DB_USERNAME: "${DB_USERNAME}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QUEUE_CONNECTION: redis
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      SESSION_LIFETIME: 120
+      MAIL_MAILER: "${MAIL_MAILER:-log}"
+      MAIL_HOST: "${MAIL_HOST:-}"
+      MAIL_PORT: "${MAIL_PORT:-587}"
+      MAIL_USERNAME: "${MAIL_USERNAME:-}"
+      MAIL_PASSWORD: "${MAIL_PASSWORD:-}"
+      MAIL_FROM_ADDRESS: "${MAIL_FROM_ADDRESS:-noreply@rms.com}"
+      MAIL_FROM_NAME: "RMS Social Hub"
+      FACEBOOK_APP_ID: "${FACEBOOK_APP_ID}"
+      FACEBOOK_APP_SECRET: "${FACEBOOK_APP_SECRET}"
+      FACEBOOK_REDIRECT_URI: "${FACEBOOK_REDIRECT_URI}"
+    volumes:
+      - app_storage:/var/www/html/storage/app/public
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - rms-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: rms-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rms-network
+
+volumes:
+  app_storage:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  rms-network:
+    driver: bridge
