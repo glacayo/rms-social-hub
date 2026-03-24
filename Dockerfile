@@ -1,30 +1,17 @@
 # ============================================================
-# Stage 1: Node — build frontend assets
+# RMS Social Hub — Production Dockerfile
+# Single stage: PHP 8.2 + Node 20
+# Order: composer install → ziggy:generate → npm build
 # ============================================================
-FROM node:20-alpine AS frontend
+FROM php:8.2-fpm-alpine
 
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
-
-COPY vite.config.js ./
-COPY postcss.config.js ./
-COPY tailwind.config.js ./
-COPY resources/ ./resources/
-
-RUN npm run build
-
-# ============================================================
-# Stage 2: PHP — production image
-# ============================================================
-FROM php:8.2-fpm-alpine AS app
-
-# Install system dependencies
+# Install system dependencies + Node 20
 RUN apk add --no-cache \
     nginx \
     supervisor \
     curl \
+    nodejs \
+    npm \
     libpq-dev \
     libzip-dev \
     libpng-dev \
@@ -33,7 +20,8 @@ RUN apk add --no-cache \
     oniguruma-dev \
     icu-dev \
     git \
-    unzip
+    unzip \
+    && npm install -g npm@latest
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-jpeg --with-webp \
@@ -57,31 +45,40 @@ COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy composer files first (layer cache)
+# ── Step 1: PHP dependencies (layer cache — only re-runs if composer files change)
 COPY composer.json composer.lock ./
-
-# Install PHP dependencies (no dev, optimized autoloader)
 RUN composer install \
     --no-dev \
     --optimize-autoloader \
     --no-interaction \
     --no-scripts
 
-# Copy application code
+# ── Step 2: Copy full application
 COPY . .
 
-# Copy built frontend assets from Stage 1
-COPY --from=frontend /app/public/build ./public/build
-
-# Run post-install scripts now that full app is present
+# ── Step 3: Run composer post-install scripts (needs full app)
 RUN composer run-script post-autoload-dump
 
-# Set correct permissions
+# ── Step 4: Generate ziggy.js (needs vendor/ + routes/)
+RUN php artisan ziggy:generate --env=production
+
+# ── Step 5: JS dependencies + frontend build (ziggy.js now exists)
+COPY package*.json ./
+RUN npm ci
+
+RUN npm run build
+
+# ── Step 6: Clean up Node + dev artifacts (keep image lean)
+RUN npm prune --omit=dev \
+    && rm -rf node_modules \
+    && apk del nodejs npm
+
+# ── Step 7: Permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Copy config files
+# ── Step 8: Config files
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
