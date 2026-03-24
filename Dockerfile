@@ -21,6 +21,9 @@ RUN apk add --no-cache \
     icu-dev \
     git \
     unzip \
+    autoconf \
+    g++ \
+    make \
     && npm install -g npm@latest
 
 # Install PHP extensions
@@ -37,8 +40,10 @@ RUN docker-php-ext-configure gd --with-jpeg --with-webp \
         intl \
         pcntl
 
-# Install Redis extension via PECL
-RUN pecl install redis && docker-php-ext-enable redis
+# Install Redis extension via PECL (requires autoconf + g++ + make)
+RUN pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del autoconf g++ make
 
 # Install Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
