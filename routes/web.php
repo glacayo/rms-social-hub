@@ -5,6 +5,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Health check endpoint for Railway
+Route::get('/up', fn() => response()->json(['status' => 'ok']));
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
