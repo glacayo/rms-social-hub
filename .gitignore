@@ -18,3 +18,11 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/.agents
+/.atl
+/skills-lock.json
+/temp_laravel
+/test_db.php
+/seed.log
+/seed_final.log
+/nul

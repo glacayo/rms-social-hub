@@ -32,6 +32,33 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </NavLink>
+                                
+                                <NavLink :href="route('publisher.index')" :active="route().current('publisher.*')">
+                                    Publisher
+                                </NavLink>
+
+                                <!-- Admin & Super Admin Links -->
+                                <template v-if="['super-admin', 'admin'].includes($page.props.auth.user.role)">
+                                    <NavLink :href="route('admin.pages.index')" :active="route().current('admin.pages.*')">
+                                        Páginas
+                                    </NavLink>
+                                    
+                                    <NavLink :href="route('facebook.connect')" :active="route().current('facebook.connect')">
+                                        Conectar Meta
+                                    </NavLink>
+                                    
+                                    <NavLink 
+                                        v-if="$page.props.auth.user.role === 'super-admin'"
+                                        :href="route('admin.users.index')" 
+                                        :active="route().current('admin.users.*')"
+                                    >
+                                        Usuarios
+                                    </NavLink>
+
+                                    <NavLink :href="route('admin.audit-log.index')" :active="route().current('admin.audit-log.*')">
+                                        Auditoría
+                                    </NavLink>
+                                </template>
                             </div>
                         </div>
 
@@ -115,6 +142,32 @@ const showingNavigationDropdown = ref(false);
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
                         </ResponsiveNavLink>
+                        
+                        <ResponsiveNavLink :href="route('publisher.index')" :active="route().current('publisher.*')">
+                            Publisher
+                        </ResponsiveNavLink>
+
+                        <template v-if="['super-admin', 'admin'].includes($page.props.auth.user.role)">
+                            <ResponsiveNavLink :href="route('admin.pages.index')" :active="route().current('admin.pages.*')">
+                                Páginas
+                            </ResponsiveNavLink>
+                            
+                            <ResponsiveNavLink :href="route('facebook.connect')" :active="route().current('facebook.connect')">
+                                Conectar Meta
+                            </ResponsiveNavLink>
+                            
+                            <ResponsiveNavLink 
+                                v-if="$page.props.auth.user.role === 'super-admin'"
+                                :href="route('admin.users.index')" 
+                                :active="route().current('admin.users.*')"
+                            >
+                                Usuarios
+                            </ResponsiveNavLink>
+
+                            <ResponsiveNavLink :href="route('admin.audit-log.index')" :active="route().current('admin.audit-log.*')">
+                                Auditoría
+                            </ResponsiveNavLink>
+                        </template>
                     </div>
 
                     <!-- Responsive Settings Options -->

@@ -20,12 +20,7 @@ Route::get('/up', fn() => response()->json(['status' => 'ok']));
 */
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
@@ -50,6 +45,7 @@ Route::middleware(['auth', 'verified', 'role:super-admin,admin', 'throttle:oauth
 Route::middleware(['auth', 'verified', 'role:super-admin,admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('pages', \App\Http\Controllers\Admin\PageController::class)
         ->only(['index', 'destroy']);
+    Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::get('audit-log', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])
         ->name('audit-log.index');
 });

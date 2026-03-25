@@ -16,11 +16,12 @@ services:
       LOG_CHANNEL: stderr
       LOG_LEVEL: "${LOG_LEVEL:-error}"
       DB_CONNECTION: pgsql
-      DB_HOST: "${DB_HOST}"
+      DB_HOST: db
       DB_PORT: "${DB_PORT:-5432}"
       DB_DATABASE: "${DB_DATABASE}"
       DB_USERNAME: "${DB_USERNAME}"
       DB_PASSWORD: "${DB_PASSWORD}"
+      DB_SSLMODE: "${DB_SSLMODE:-disable}"
       REDIS_HOST: redis
       REDIS_PORT: 6379
       QUEUE_CONNECTION: redis
@@ -40,6 +41,8 @@ services:
     volumes:
       - app_storage:/var/www/html/storage/app/public
     depends_on:
+      db:
+        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
@@ -60,10 +63,32 @@ services:
     networks:
       - rms-network
 
+  db:
+    image: postgres:15-alpine
+    container_name: rms-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "${DB_DATABASE:-rms_social_hub}"
+      POSTGRES_USER: "${DB_USERNAME:-postgres}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-postgres}"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-rms_social_hub}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rms-network
+
 volumes:
   app_storage:
     driver: local
   redis_data:
+    driver: local
+  postgres_data:
     driver: local
 
 networks:
